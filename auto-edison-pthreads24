@@ -1,0 +1,24 @@
+#!/bin/bash -l
+#SBATCH -p debug # change this option for non-debug runs
+#SBATCH -t 00:20:00
+#SBATCH -A mp309
+#SBATCH -o auto-pthreads24.%j.stdout
+#SBATCH -e auto-pthreads24.%j.error
+#SBATCH -N 1
+
+rm pthreads.txt
+srun -n 1 -c 1 ./serial -n 500 -no -s pthreads.txt
+srun -n 1 -c 1 ./pthreads -p 1 -n 500 -no -s pthreads.txt
+srun -n 1 -c 2 ./pthreads -p 2 -n 500 -no -s pthreads.txt
+srun -n 1 -c 4 ./pthreads -p 4 -n 500 -no -s pthreads.txt
+srun -n 1 -c 6 ./pthreads -p 6 -n 500 -no -s pthreads.txt
+srun -n 1 -c 12 ./pthreads -p 12 -n 500 -no -s pthreads.txt
+srun -n 1 -c 18 ./pthreads -p 18 -n 500 -no -s pthreads.txt
+srun -n 1 -c 24 ./pthreads -p 24 -n 500 -no -s pthreads.txt
+srun -n 1 -c 2 ./pthreads -p 2 -n 1000 -no -s pthreads.txt
+srun -n 1 -c 4 ./pthreads -p 4 -n 2000 -no -s pthreads.txt
+srun -n 1 -c 6 ./pthreads -p 6 -n 3000 -no -s pthreads.txt
+srun -n 1 -c 12 ./pthreads -p 12 -n 6000 -no -s pthreads.txt
+srun -n 1 -c 18 ./pthreads -p 18 -n 9000 -no -s pthreads.txt
+srun -n 1 -c 24 ./pthreads -p 24 -n 12000 -no -s pthreads.txt
+./autograder -v pthreads -s pthreads.txt

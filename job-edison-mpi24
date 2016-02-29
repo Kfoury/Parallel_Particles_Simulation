@@ -1,0 +1,9 @@
+#!/bin/bash -l
+#SBATCH -p debug # change this option for non-debug runs
+#SBATCH -t 00:10:00
+#SBATCH -N 24
+#SBATCH -A mp309
+#SBATCH -o mpi24.%j.stdout
+#SBATCH -e mpi24.%j.error
+
+srun -n 24 ./mpi -n 500 -o mpi.txt
