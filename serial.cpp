@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <math.h>
 #include "common.h"
+#include <vector>
 
 
 
@@ -31,9 +32,6 @@ int find_bin_from_particle(double x_coordinate, double y_coordinate, double size
 //
 int main( int argc, char **argv )
 {
-    
-    
-
     int navg,nabsavg=0;
     double davg,dmin, absmin=1.0, absavg=0.0;
 
@@ -59,21 +57,16 @@ int main( int argc, char **argv )
     particle_t *particles = (particle_t*) malloc( n * sizeof(particle_t) );
     set_size( n );
     init_particles( n, particles );
-    
-    
-    
+        
     
     //Initialize the empty bins with neighbours
     
     double size_of_grid = sqrt(n * 0.0005);
         
-    
-    
-    
     //Simple initial guess
     double bin_width = sqrt( 4 / 0.0005);
-    int number_of_bins =  int(size_of_grid/bin_width);
-    
+    // int number_of_bins =  int(size_of_grid/bin_width);
+    int number_of_bins = 4;    
     //Final estimate of the bin width give 3 - 4 particles per bin
     bin_width = size_of_grid / number_of_bins;
     
@@ -83,45 +76,49 @@ int main( int argc, char **argv )
     
     int total_number_of_bins = number_of_bins * number_of_bins;
     
-    bin_t *bins = (bin_t* )malloc(total_number_of_bins * sizeof(bin_t));
+    // bin_t *bins = (bin_t* )malloc(total_number_of_bins * sizeof(bin_t));
+    bin_t bins[total_number_of_bins];
+    // bin_t bin;
 
-    
     for( int i = 0; i < total_number_of_bins; i++ )
         {
-            
+            bin_t bin;   
             //checking for corner cases
             int bin_x = i % number_of_bins;
             int bin_y = int(i/number_of_bins);
-            
+
             if (bin_x == 0 || bin_x == (number_of_bins-1) || bin_y == 0 || bin_y == (number_of_bins-1) )
             {  
                 //Checking the neighbours to see which one violated the boundary
                 for (int x = -1; x <= 1; x++) {
                     for (int y = -1; y <=1; y++) {
                         if (bin_x+x >= 0 && bin_y+y >= 0 && bin_x+x < number_of_bins && bin_y+y < number_of_bins) {
-                            bins[i].neighbours.push_back(i+x + number_of_bins*y);
+                            //bins[i].neighbours.push_back(i+x + number_of_bins*y);
+                            bin.neighbours.push_back(i+x+number_of_bins*y);
                         }
                     }
                 }   
             } else {
                 for (int x = -1; x <= 1; x++) {
                     for (int y = -1; y <=1; y++) {
-                        bins[i].neighbours.push_back(i+x + number_of_bins*y);
+                        // bins[i].neighbours.push_back(i+x + number_of_bins*y);
+                        bin.neighbours.push_back(i+x+number_of_bins*y);
                     }
                 }   
             }
+            bins[i] = bin;
         }
 
     //
     //  simulate a number of time steps
     //
     double simulation_time = read_timer( );
-	
     for( int step = 0; step < NSTEPS; step++ )
     {
 	navg = 0;
         davg = 0.0;
 	dmin = 1.0;
+    //printf("yoo we are at step  %d  \n", step);
         //
         //  compute forces
         //
@@ -140,11 +137,8 @@ int main( int argc, char **argv )
         //Assign the particles
         for( int i = 0; i < n; i++ )
             {
-                
                 int index_of_bin =  find_bin_from_particle(particles[i].x,particles[i].y, bin_width,size_of_grid);
                 bins[index_of_bin].particles.push_back(i);
-                
-                
             }
         
         //apply the force
@@ -159,12 +153,9 @@ int main( int argc, char **argv )
                     for(std::vector<int>::size_type f = 0; f != bins[bins[i].neighbours[j]].particles.size(); f++) {
                         
                         apply_force( particles[k], particles[f],&dmin,&davg,&navg);
-                    }
-                    
-                }
-                
+                    }   
+                }     
             }
-            
         }
         
         //
