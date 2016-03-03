@@ -115,37 +115,22 @@ int main( int argc, char **argv )
     double simulation_time = read_timer( );
     for( int step = 0; step < NSTEPS; step++ )
     {
-	navg = 0;
-        davg = 0.0;
-	dmin = 1.0;
-    //printf("yoo we are at step  %d  \n", step);
-        //
-        //  compute forces
-        //
-        
-    //OLD IMPLEMENTATION
-        
-//        for( int i = 0; i < n; i++ )
-//        {
-//            particles[i].ax = particles[i].ay = 0;
-//            for (int j = 0; j < n; j++ )
-//				apply_force( particles[i], particles[j],&dmin,&davg,&navg);
-//        }
- 
-     //NEW
-        
-        //Assign the particles
+	   navg = 0;
+       davg = 0.0;
+	   dmin = 1.0;
+        for (int i = 0; i < total_number_of_bins; i++) {
+            bins[i].particles.clear();
+        }
         for( int i = 0; i < n; i++ )
             {
                 int index_of_bin =  find_bin_from_particle(particles[i].x,particles[i].y, bin_width,size_of_grid);
                 bins[index_of_bin].particles.push_back(i);
             }
-        
+
         //apply the force
-        
         for(int i= 0; i<total_number_of_bins;i++)
         {
-            
+            // printf("i is   %d\n", i);
             for(std::vector<int>::size_type j = 0; j != bins[i].neighbours.size(); j++) {    
                 
                 for(std::vector<int>::size_type k = 0; k != bins[i].particles.size(); k++) {
@@ -157,13 +142,13 @@ int main( int argc, char **argv )
                 }     
             }
         }
-        
+
+
         //
         //  move particles
         //
         for( int i = 0; i < n; i++ ) 
             move( particles[i] );		
-
         if( find_option( argc, argv, "-no" ) == -1 )
         {
           //
