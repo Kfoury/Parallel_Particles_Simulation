@@ -11,7 +11,7 @@
 int find_bin_from_particle(double x_coordinate, double y_coordinate, double size_of_bin, double grid_size_unidirection  )
 {
     
-    int x_bin;
+    int x_bin;  
     //figuring out the x coordinate
     x_bin = int(x_coordinate / size_of_bin);
     
@@ -33,7 +33,7 @@ int main( int argc, char **argv )
 {
     
     
-    printf("Hello from the other side");
+
     int navg,nabsavg=0;
     double davg,dmin, absmin=1.0, absavg=0.0;
 
@@ -65,10 +65,8 @@ int main( int argc, char **argv )
     
     //Initialize the empty bins with neighbours
     
-    int size_of_grid = get_size();
-    
-    printf("%d", size_of_grid);
-    
+    double size_of_grid = sqrt(n * 0.0005);
+        
     
     
     
@@ -86,6 +84,7 @@ int main( int argc, char **argv )
     int total_number_of_bins = number_of_bins * number_of_bins;
     
     bin_t *bins = (bin_t* )malloc(total_number_of_bins * sizeof(bin_t));
+
     
     for( int i = 0; i < total_number_of_bins; i++ )
         {
@@ -94,48 +93,25 @@ int main( int argc, char **argv )
             int bin_x = i % number_of_bins;
             int bin_y = int(i/number_of_bins);
             
-            
             if (bin_x == 0 || bin_x == (number_of_bins-1) || bin_y == 0 || bin_y == (number_of_bins-1) )
-            {
-                
+            {  
                 //Checking the neighbours to see which one violated the boundary
                 for (int x = -1; x <= 1; x++) {
                     for (int y = -1; y <=1; y++) {
-                        if (bin_x+x > 0 && bin_y+y > 0 && bin_x+x < number_of_bins && bin_y+y < number_of_bins) {
+                        if (bin_x+x >= 0 && bin_y+y >= 0 && bin_x+x < number_of_bins && bin_y+y < number_of_bins) {
                             bins[i].neighbours.push_back(i+x + number_of_bins*y);
                         }
                     }
-                }
-                
-                
-                
-            }else
-            {
-                
-                
-                
+                }   
+            } else {
                 for (int x = -1; x <= 1; x++) {
                     for (int y = -1; y <=1; y++) {
                         bins[i].neighbours.push_back(i+x + number_of_bins*y);
                     }
-                }
-                
-                
-                
-                
-                
+                }   
             }
-            
-            
-        
-    
-    
         }
-    
-    
-    
-    
-    
+
     //
     //  simulate a number of time steps
     //
@@ -149,9 +125,6 @@ int main( int argc, char **argv )
         //
         //  compute forces
         //
-        
-        
-        
         
     //OLD IMPLEMENTATION
         
@@ -179,37 +152,20 @@ int main( int argc, char **argv )
         for(int i= 0; i<total_number_of_bins;i++)
         {
             
-            
-            for(std::vector<int>::size_type j = 0; j != bins[i].neighbours.size(); j++) {
-                
-               
+            for(std::vector<int>::size_type j = 0; j != bins[i].neighbours.size(); j++) {    
                 
                 for(std::vector<int>::size_type k = 0; k != bins[i].particles.size(); k++) {
                     
-                    
                     for(std::vector<int>::size_type f = 0; f != bins[bins[i].neighbours[j]].particles.size(); f++) {
                         
-                        
-                        
                         apply_force( particles[k], particles[f],&dmin,&davg,&navg);
-                        
-                        
-                        
                     }
                     
-                    
-                    
                 }
-                
-                
                 
             }
             
         }
-        
-        
-        
-        
         
         //
         //  move particles
