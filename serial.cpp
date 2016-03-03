@@ -62,11 +62,11 @@ int main( int argc, char **argv )
     //Initialize the empty bins with neighbours
     
     double size_of_grid = sqrt(n * 0.0005);
-        
+    
     //Simple initial guess
-    double bin_width = sqrt( 4 / 0.0005);
-    // int number_of_bins =  int(size_of_grid/bin_width);
-    int number_of_bins = 4;    
+    double bin_width = sqrt( 3 * 0.0005);
+    int number_of_bins =  int(size_of_grid/bin_width);
+    // int number_of_bins = 16;    
     //Final estimate of the bin width give 3 - 4 particles per bin
     bin_width = size_of_grid / number_of_bins;
     
