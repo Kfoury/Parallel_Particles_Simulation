@@ -6,6 +6,7 @@
 #include "omp.h"
 #include <vector>
 
+
 //Function that returns the bin index, given the number of bins, and the coordinates of the particle
 
 int find_bin_from_particle(double x_coordinate, double y_coordinate, double size_of_bin, double grid_size_unidirection) 
@@ -24,6 +25,7 @@ int find_bin_from_particle(double x_coordinate, double y_coordinate, double size
 //
 int main( int argc, char **argv )
 {   
+
     int navg,nabsavg=0,numthreads; 
     double dmin, absmin=1.0,davg,absavg=0.0;
     
@@ -66,17 +68,19 @@ int main( int argc, char **argv )
     
     // bin_t *bins = (bin_t* )malloc(total_number_of_bins * sizeof(bin_t));
     bin_t bins[total_number_of_bins];
-    // bin_t bin;
+    omp_lock_t locks[total_number_of_bins];
 
 
     //
     //  simulate a number of time steps
     //
     double simulation_time = read_timer( );
-
+    #pragma omp for
     for( int i = 0; i < total_number_of_bins; i++ )
     {
-        bin_t bin;   
+
+        bin_t bin;
+        omp_init_lock(locks+i);   
         //checking for corner cases
         int bin_x = i % number_of_bins;
         int bin_y = int(i/number_of_bins);
@@ -102,57 +106,131 @@ int main( int argc, char **argv )
         }
         bins[i] = bin;
     }
-
     #pragma omp parallel private(dmin) 
     {
+    //printf("yo\n");
     numthreads = omp_get_num_threads();
+    // if (numthreads > 1) {
+    //     printf("yooo");
+    // }
     for( int step = 0; step < NSTEPS; step++ )
-    {
-        navg = 0;
-        davg = 0.0;
-    dmin = 1.0;
-        //
-        //  compute all forces
-        //
-        #pragma omp for reduction (+:navg) reduction(+:davg)
-        for( int i = 0; i < n; i++ )
         {
-            particles[i].ax = particles[i].ay = 0;
-            for (int j = 0; j < n; j++ )
-                apply_force( particles[i], particles[j],&dmin,&davg,&navg);
-        }
-        
-        
-        //
-        //  move particles
-        //
-        #pragma omp for
-        for( int i = 0; i < n; i++ ) 
-            move( particles[i] );
-  
-        if( find_option( argc, argv, "-no" ) == -1 ) 
-        {
-          //
-          //  compute statistical data
-          //
-          #pragma omp master
-          if (navg) { 
-            absavg += davg/navg;
-            nabsavg++;
-          }
+           navg = 0;
+           davg = 0.0;
+           dmin = 1.0;
+           #pragma omp for
+            for (int i = 0; i < total_number_of_bins; i++) {
+                bins[i].particles.clear();
+                // printf("heycler\n");
 
-          #pragma omp critical
-      if (dmin < absmin) absmin = dmin; 
-        
-          //
-          //  save if necessary
-          //
-          #pragma omp master
-          if( fsave && (step%SAVEFREQ) == 0 )
-              save( fsave, n, particles );
+            }
+            #pragma omp for 
+            for( int i = 0; i < n; i++ )
+                {
+
+                    int index_of_bin =  find_bin_from_particle(particles[i].x,particles[i].y, bin_width,size_of_grid);
+                    omp_set_lock(locks+index_of_bin);
+                    bins[index_of_bin].particles.push_back(i);
+                    omp_unset_lock(locks+index_of_bin);
+                    //printf("asdfasdf");
+                }
+
+            //apply the force
+            #pragma omp for reduction (+:navg) reduction(+:davg)
+            for(int i= 0; i<total_number_of_bins;i++)
+            {
+                // printf("i is   %d\n", i);
+                for(std::vector<int>::size_type j = 0; j != bins[i].neighbours.size(); j++) {    
+                    
+                    for(std::vector<int>::size_type k = 0; k != bins[i].particles.size(); k++) {
+                        
+                        for(std::vector<int>::size_type f = 0; f != bins[bins[i].neighbours[j]].particles.size(); f++) {
+                            
+                            apply_force( particles[k], particles[f],&dmin,&davg,&navg);
+                        }   
+                    }     
+                }
+            }
+
+
+            //
+            //  move particles
+            //
+            #pragma omp for
+            for( int i = 0; i < n; i++ ) 
+                move( particles[i] );       
+            if( find_option( argc, argv, "-no" ) == -1 )
+            {
+              //
+              // Computing statistical data
+              //
+              #pragma omp master
+              if (navg) {
+                absavg +=  davg/navg;
+                nabsavg++;
+              }
+              #pragma omp critical
+              if (dmin < absmin) absmin = dmin;
+            
+              //
+              //  save if necessary
+              //
+              #pragma omp master
+              if( fsave && (step%SAVEFREQ) == 0 )
+                  save( fsave, n, particles );
+            }
         }
     }
-}
+//     #pragma omp parallel private(dmin) 
+//     {
+//     numthreads = omp_get_num_threads();
+//     for( int step = 0; step < NSTEPS; step++ )
+//     {
+//         navg = 0;
+//         davg = 0.0;
+//     dmin = 1.0;
+//         //
+//         //  compute all forces
+//         //
+//         #pragma omp for reduction (+:navg) reduction(+:davg)
+//         for( int i = 0; i < n; i++ )
+//         {
+//             particles[i].ax = particles[i].ay = 0;
+//             for (int j = 0; j < n; j++ )
+//                 apply_force( particles[i], particles[j],&dmin,&davg,&navg);
+//         }
+        
+        
+//         //
+//         //  move particles
+//         //
+//         #pragma omp for
+//         for( int i = 0; i < n; i++ ) 
+//             move( particles[i] );
+  
+//         if( find_option( argc, argv, "-no" ) == -1 ) 
+//         {
+//           //
+//           //  compute statistical data
+//           //
+//           #pragma omp master
+//           if (navg) { 
+//             absavg += davg/navg;
+//             nabsavg++;
+//           }
+
+//           #pragma omp critical
+//       if (dmin < absmin) absmin = dmin; 
+        
+//           //
+//           //  save if necessary
+//           //
+//           #pragma omp master
+//           if( fsave && (step%SAVEFREQ) == 0 )
+//               save( fsave, n, particles );
+//         }
+//     }
+// }
     simulation_time = read_timer( ) - simulation_time;
     
     printf( "n = %d,threads = %d, simulation time = %g seconds", n,numthreads, simulation_time);
