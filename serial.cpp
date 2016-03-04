@@ -79,7 +79,7 @@ int main( int argc, char **argv )
     // bin_t *bins = (bin_t* )malloc(total_number_of_bins * sizeof(bin_t));
     bin_t bins[total_number_of_bins];
     // bin_t bin;
-
+    double simulation_time = read_timer( );
     for( int i = 0; i < total_number_of_bins; i++ )
         {
             bin_t bin;   
@@ -112,7 +112,6 @@ int main( int argc, char **argv )
     //
     //  simulate a number of time steps
     //
-    double simulation_time = read_timer( );
     for( int step = 0; step < NSTEPS; step++ )
     {
 	   navg = 0;
