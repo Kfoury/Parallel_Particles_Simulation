@@ -125,7 +125,7 @@ int main( int argc, char **argv )
 
             }
             #pragma omp for 
-            for( int i = 0; i < n; i++ )
+            for( int i = 0; i < n; i++ ) // Reassigning particles to new bins
                 {
 
                     int index_of_bin =  find_bin_from_particle(particles[i].x,particles[i].y, bin_width,size_of_grid);
@@ -136,18 +136,14 @@ int main( int argc, char **argv )
                 }
 
             //apply the force
-            #pragma omp for reduction (+:navg) reduction(+:davg)
+            #pragma omp for reduction (+:navg) reduction(+:davg) // Tried schedule(dynamic) but saw no change
             for(int i= 0; i<total_number_of_bins;i++)
             {
-                // printf("i is   %d\n", i);
                 for(std::vector<int>::size_type j = 0; j != bins[i].neighbours.size(); j++) {    
-                    
-                    for(std::vector<int>::size_type k = 0; k != bins[i].particles.size(); k++) {
-                        
+                    for(std::vector<int>::size_type k = 0; k < bins[i].particles.size(); k++) {
                         for(std::vector<int>::size_type f = 0; f != bins[bins[i].neighbours[j]].particles.size(); f++) {
-                            
                             apply_force( particles[k], particles[f],&dmin,&davg,&navg);
-                        }   
+                        }
                     }     
                 }
             }
