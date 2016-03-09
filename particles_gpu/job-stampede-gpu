@@ -1,0 +1,9 @@
+#!/bin/bash
+#SBATCH -J gpu          	# job name
+#SBATCH -o gpu.%j.out       	# output and error file name (%j expands to jobID)
+#SBATCH -n 1             	# total number of mpi tasks requested
+#SBATCH -p gpu     		# queue (partition) -- can use gpu or gpudev
+#SBATCH -t 00:10:00        	# run time (hh:mm:ss) - 10 minutes
+
+ibrun ./gpu -n 2000 -o gpu.txt             
+./autocorrect -s gpu.txt
