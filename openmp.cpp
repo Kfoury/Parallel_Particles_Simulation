@@ -129,6 +129,7 @@ int main( int argc, char **argv )
                 {
 
                     int index_of_bin =  find_bin_from_particle(particles[i].x,particles[i].y, bin_width,size_of_grid);
+		    particles[i].ax = particles[i].ay = 0;
                     omp_set_lock(locks+index_of_bin);
                     bins[index_of_bin].particles.push_back(i);
                     omp_unset_lock(locks+index_of_bin);

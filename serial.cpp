@@ -123,6 +123,7 @@ int main( int argc, char **argv )
         for( int i = 0; i < n; i++ )
             {
                 int index_of_bin =  find_bin_from_particle(particles[i].x,particles[i].y, bin_width,size_of_grid);
+                particles[i].ax = particles[i].ay = 0;
                 bins[index_of_bin].particles.push_back(i);
             }
 
@@ -133,7 +134,6 @@ int main( int argc, char **argv )
             for(std::vector<int>::size_type j = 0; j != bins[i].neighbours.size(); j++) {    
                 
                 for(std::vector<int>::size_type k = 0; k != bins[i].particles.size(); k++) {
-                    
                     for(std::vector<int>::size_type f = 0; f != bins[bins[i].neighbours[j]].particles.size(); f++) {
                         
                         apply_force( particles[k], particles[f],&dmin,&davg,&navg);
