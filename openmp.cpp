@@ -123,7 +123,6 @@ int main( int argc, char **argv )
                     omp_set_lock(locks+index_of_bin);
                     bins[index_of_bin].particles.push_back(i);
                     omp_unset_lock(locks+index_of_bin);
-                    //printf("asdfasdf");
                 }
 
             //apply the force
