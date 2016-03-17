@@ -57,16 +57,13 @@ int main( int argc, char **argv )
     //Simple initial guess
     double bin_width = sqrt( 3 * 0.0005);
     int number_of_bins =  int(size_of_grid/bin_width);
-    // int number_of_bins = 16;    
+     
     //Final estimate of the bin width give 3 - 4 particles per bin
     bin_width = size_of_grid / number_of_bins;
-    
-    //Variables to use later: bin_width, size_of_grid, number_of_bins
     
     //Now create a list of empty bins, and populate their nearest N.
     int total_number_of_bins = number_of_bins * number_of_bins;
     
-    // bin_t *bins = (bin_t* )malloc(total_number_of_bins * sizeof(bin_t));
     bin_t bins[total_number_of_bins];
     omp_lock_t locks[total_number_of_bins];
 
@@ -91,7 +88,6 @@ int main( int argc, char **argv )
             for (int x = -1; x <= 1; x++) {
                 for (int y = -1; y <=1; y++) {
                     if (bin_x+x >= 0 && bin_y+y >= 0 && bin_x+x < number_of_bins && bin_y+y < number_of_bins) {
-                        //bins[i].neighbours.push_back(i+x + number_of_bins*y);
                         bin.neighbours.push_back(i+x+number_of_bins*y);
                     }
                 }
@@ -99,7 +95,6 @@ int main( int argc, char **argv )
         } else {
             for (int x = -1; x <= 1; x++) {
                 for (int y = -1; y <=1; y++) {
-                    // bins[i].neighbours.push_back(i+x + number_of_bins*y);
                     bin.neighbours.push_back(i+x+number_of_bins*y);
                 }
             }   
@@ -108,11 +103,7 @@ int main( int argc, char **argv )
     }
     #pragma omp parallel private(dmin) 
     {
-    //printf("yo\n");
     numthreads = omp_get_num_threads();
-    // if (numthreads > 1) {
-    //     printf("yooo");
-    // }
     for( int step = 0; step < NSTEPS; step++ )
         {
            navg = 0;
@@ -121,7 +112,6 @@ int main( int argc, char **argv )
            #pragma omp for
             for (int i = 0; i < total_number_of_bins; i++) {
                 bins[i].particles.clear();
-                // printf("heycler\n");
 
             }
             #pragma omp for 
@@ -129,7 +119,7 @@ int main( int argc, char **argv )
                 {
 
                     int index_of_bin =  find_bin_from_particle(particles[i].x,particles[i].y, bin_width,size_of_grid);
-		    particles[i].ax = particles[i].ay = 0;
+            particles[i].ax = particles[i].ay = 0;
                     omp_set_lock(locks+index_of_bin);
                     bins[index_of_bin].particles.push_back(i);
                     omp_unset_lock(locks+index_of_bin);
@@ -178,56 +168,7 @@ int main( int argc, char **argv )
             }
         }
     }
-//     #pragma omp parallel private(dmin) 
-//     {
-//     numthreads = omp_get_num_threads();
-//     for( int step = 0; step < NSTEPS; step++ )
-//     {
-//         navg = 0;
-//         davg = 0.0;
-//     dmin = 1.0;
-//         //
-//         //  compute all forces
-//         //
-//         #pragma omp for reduction (+:navg) reduction(+:davg)
-//         for( int i = 0; i < n; i++ )
-//         {
-//             particles[i].ax = particles[i].ay = 0;
-//             for (int j = 0; j < n; j++ )
-//                 apply_force( particles[i], particles[j],&dmin,&davg,&navg);
-//         }
-        
-        
-//         //
-//         //  move particles
-//         //
-//         #pragma omp for
-//         for( int i = 0; i < n; i++ ) 
-//             move( particles[i] );
-  
-//         if( find_option( argc, argv, "-no" ) == -1 ) 
-//         {
-//           //
-//           //  compute statistical data
-//           //
-//           #pragma omp master
-//           if (navg) { 
-//             absavg += davg/navg;
-//             nabsavg++;
-//           }
 
-//           #pragma omp critical
-//       if (dmin < absmin) absmin = dmin; 
-        
-//           //
-//           //  save if necessary
-//           //
-//           #pragma omp master
-//           if( fsave && (step%SAVEFREQ) == 0 )
-//               save( fsave, n, particles );
-//         }
-//     }
-// }
     simulation_time = read_timer( ) - simulation_time;
     
     printf( "n = %d,threads = %d, simulation time = %g seconds", n,numthreads, simulation_time);
